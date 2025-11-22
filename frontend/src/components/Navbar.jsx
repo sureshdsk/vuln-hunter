@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Shield, LayoutDashboard, FileText } from 'lucide-react';
+import { Shield, LayoutDashboard } from 'lucide-react';
+import ThemeToggle from './ThemeToggle';
 
 const Navbar = () => {
     const location = useLocation();
@@ -29,8 +30,12 @@ const Navbar = () => {
                     </Link>
                 </li>
             </ul>
+            <div className="navbar-footer">
+                <ThemeToggle />
+            </div>
         </nav>
     );
 };
 
 export default Navbar;
+

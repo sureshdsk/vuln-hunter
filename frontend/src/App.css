@@ -42,7 +42,7 @@
   display: flex;
   flex-direction: column;
   z-index: 50;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 4px 0 20px var(--shadow-color);
 }
 
 .navbar-brand {
@@ -89,13 +89,118 @@
   border: 1px solid rgba(99, 102, 241, 0.2);
 }
 
+/* Navbar Footer */
+.navbar-footer {
+  margin-top: auto;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-color);
+}
+
+/* Theme Toggle */
+.theme-toggle-container {
+  position: relative;
+  width: 100%;
+}
+
+.theme-toggle-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.theme-toggle-btn:hover {
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+  background-color: var(--bg-card);
+}
+
+.theme-name {
+  flex: 1;
+  text-align: left;
+}
+
+.chevron {
+  transition: transform 0.2s ease;
+}
+
+.chevron.open {
+  transform: rotate(180deg);
+}
+
+.theme-dropdown {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  margin-bottom: 0.5rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 10px 25px var(--shadow-color);
+  animation: slideUp 0.2s ease-out;
+  backdrop-filter: blur(10px);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.theme-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background-color: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  text-align: left;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.theme-option:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.theme-option.active {
+  color: var(--accent-primary);
+  background-color: rgba(99, 102, 241, 0.1);
+}
+
+.theme-option .checkmark {
+  margin-left: auto;
+  font-weight: bold;
+}
+
 /* Submission Form */
 .submission-form-container {
-  background-color: var(--bg-secondary);
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
   padding: 2.5rem;
   border-radius: 1rem;
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-glow);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px var(--shadow-color), 0 0 40px var(--glow-color);
   max-width: 600px;
   margin: 4rem auto;
   position: relative;
@@ -117,7 +222,8 @@
   font-size: 1.75rem;
   font-weight: 600;
   text-align: center;
-  background: linear-gradient(to right, #fff, #94a3b8);
+  background: linear-gradient(to right, var(--text-primary), var(--text-secondary));
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -174,6 +280,39 @@ button[type="submit"]:disabled {
   cursor: not-allowed;
 }
 
+/* Status Message Styles */
+.status-message {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  animation: slideIn 0.3s ease-out;
+}
+
+.status-message.success {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.status-message.error {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Dashboard */
 .dashboard-header {
   display: flex;
@@ -203,11 +342,12 @@ button[type="submit"]:disabled {
 }
 
 .jobs-table-container {
-  background-color: var(--bg-secondary);
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
   border-radius: 1rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--glass-border);
   overflow: hidden;
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 20px var(--shadow-color);
 }
 
 .jobs-table {
@@ -282,4 +422,51 @@ button[type="submit"]:disabled {
   border-color: var(--accent-primary);
   color: var(--accent-primary);
   background-color: rgba(99, 102, 241, 0.05);
+}
+
+/* Loading Spinner */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .navbar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .main-content {
+    margin-left: 0;
+    padding: 1rem;
+  }
+
+  .submission-form-container {
+    padding: 1.5rem;
+    margin: 2rem auto;
+  }
+
+  .jobs-table {
+    font-size: 0.85rem;
+  }
+
+  .jobs-table th,
+  .jobs-table td {
+    padding: 0.75rem;
+  }
 }
