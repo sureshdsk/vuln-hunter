@@ -46,7 +46,7 @@ AI-powered vulnerability analysis system that automatically:
        │
        ▼
 ┌─────────────────┐
-│ Workflow Engine │ (Prefect/Airflow)
+│ Workflow Engine │ (Prefect)
 └─────────┬───────┘
           │
     ┌─────┴─────┬─────────┬──────────┬──────────┐
@@ -64,7 +64,7 @@ AI-powered vulnerability analysis system that automatically:
 | Component | Technology | Rationale |
 |-----------|-----------|-----------|
 | **Orchestration** | Prefect or Airflow | Scalable workflow management |
-| **AI Agent** | LangChain Deep-Agents | Complex multi-step tasks, sub-agents, memory |
+| **AI Agent** | Google ADK | Flexible agent framework optimized for Gemini, code-first development |
 | **LLM** | Gemini 2.0 Flash or GPT-4 | Fast, accurate code analysis |
 | **Vuln DB** | OSV.dev (primary) + Vulners | Best Python support, extensible |
 | **Language Analysis** | Python AST + tree-sitter | Native Python, extensible |
@@ -110,39 +110,47 @@ class RustAnalyzer(LanguageAnalyzer):
 
 ---
 
-## 🤖 Deep-Agents Integration
+## 🤖 Google ADK Integration
 
-### Why Deep-Agents?
+### Why Google ADK?
 
 **Key Advantages**:
-1. **Task Decomposition** - Automatically breaks CVE analysis into subtasks
-2. **Context Management** - Handles large repositories without token limits
-3. **Sub-Agent Pattern** - Delegates to specialized agents
-4. **Persistent Memory** - Learns from previous analyses
-5. **Human-in-the-Loop** - Can request approval for fixes
+1. **Code-First Development** - Define agent logic, tools, and orchestration directly in Python
+2. **Flexible Orchestration** - Support for sequential, parallel, or loop agents
+3. **Multi-Agent Architecture** - Compose specialized agents into hierarchical structures
+4. **Rich Tool Ecosystem** - Pre-built tools + custom functions + agent-as-tool pattern
+5. **Model-Agnostic** - Optimized for Gemini but works with other LLMs
+6. **Deployment Ready** - Local, Cloud Run, or Vertex AI Agent Engine
 
-### Agent Workflow
+### Agent Architecture
+
 ```python
-from deepagents import create_deep_agent
-from langchain_google_genai import ChatGoogleGenerativeAI
+from google import genai
+from agent.vulnerability_agent import create_vulnerability_agent
 
-agent = create_deep_agent(
-    llm=ChatGoogleGenerativeAI(model="gemini-2.0-flash-exp"),
-    tools=[
-        search_code_tool,
-        analyze_dataflow_tool,
-        suggest_fix_tool,
-        write_analysis_report
-    ],
-    system_prompt="Security vulnerability analyst..."
+# Create ADK agent with Gemini
+agent = create_vulnerability_agent()
+
+# Agent uses custom tools
+tools = [
+    cve_lookup_tool,      # Fetch CVE from OSV.dev
+    code_search_tool,     # Find vulnerable patterns
+    report_builder_tool   # Generate analysis reports
+]
+
+# Run analysis
+report = agent.analyze_cve(
+    cve_id="CVE-2022-40897",
+    code_index=code_index,
+    job_id="analysis-123"
 )
 ```
 
 ### Custom Tools
-- **search_code_tool** - Find method invocations in code
-- **analyze_dataflow_tool** - Assess exploitability
-- **suggest_fix_tool** - Generate remediation advice
-- **write_analysis_report** - Create structured findings
+
+- **cve_lookup_tool** - Fetch CVE details from OSV.dev API
+- **code_search_tool** - Search code with exploitability assessment
+- **report_builder_tool** - Generate structured vulnerability reports
 
 ---
 
@@ -199,7 +207,7 @@ def analyze_vulnerability(repo_url: str, cve_id: str):
 - GitHub repo cloning
 - Python dependency parsing
 - Basic method search
-- Google ADK/Deep-agents setup
+- Google ADK agent setup
 - Simple report generation
 - Prefect workflow
 - Web API (FastAPI)
@@ -251,6 +259,6 @@ cve-analyzer/
 
 1. **Prototype OSV.dev integration** - Test CVE data extraction
 2. **Build Python code indexer** - AST parsing and method call detection
-3. **Set up deep-agents** - Configure LangChain agent with custom tools
+3. **Set up Google ADK agent** - Configure agent with custom tools
 4. **Create Prefect workflow** - End-to-end pipeline
 5. **Test on known vulnerabilities** - Validate with CVE-2022-40897 (setuptools)

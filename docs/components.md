@@ -160,35 +160,34 @@ indexer/
 ---
 
 ### 6. AI Agent Service ⭐
-**Tech**: LangChain Deep-Agents + Gemini
+**Tech**: Google ADK + Gemini
 
 **Custom Tools**:
 ```python
-@tool
-def search_code_tool(method_name: str, code_index: dict) -> dict:
-    """Search for method invocations."""
+# CVE Lookup Tool
+def cve_lookup_tool(cve_id: str) -> dict:
+    """Fetch CVE information from OSV.dev."""
     
-@tool
-def analyze_dataflow_tool(file_path: str, line: int, code_index: dict) -> dict:
-    """Analyze exploitability."""
+# Code Search Tool
+def code_search_tool(code_index: dict, search_query: str, vulnerable_methods: list) -> dict:
+    """Search code for vulnerable patterns with exploitability assessment."""
     
-@tool
-def suggest_fix_tool(cve_id: str, package: str, version: str) -> dict:
-    """Generate fix recommendations."""
+# Report Builder Tool
+def report_builder_tool(job_id: str, cve_info: dict, code_findings: dict) -> dict:
+    """Generate comprehensive vulnerability reports."""
 ```
 
 **Files**:
 ```
-agent_service/
-├── agent.py
-├── tools/
-│   ├── code_search.py
-│   ├── dataflow.py
-│   ├── fix_generator.py
-│   └── report_writer.py
-├── prompts/
-│   └── system_prompt.py
-└── config.py
+agent/
+├── __init__.py
+├── config.py
+├── vulnerability_agent.py
+└── tools/
+    ├── __init__.py
+    ├── cve_lookup.py
+    ├── code_search.py
+    └── report_builder.py
 ```
 
 ---
@@ -324,7 +323,8 @@ python -c "from indexer.analyzers.python_analyzer import PythonAnalyzer; \
 
 ### Test AI Agent
 ```bash
-pip install langchain deepagents langchain-google-genai
-python -c "from agent_service.agent import create_vulnerability_agent; \
-           agent = create_vulnerability_agent()"
+cd workflows
+export GOOGLE_API_KEY=your_api_key_here
+uv run python -c "from agent.vulnerability_agent import create_vulnerability_agent; \
+           agent = create_vulnerability_agent(); print('Agent initialized')"
 ```

@@ -2,62 +2,14 @@
 Prefect workflow for CVE analysis
 """
 
-from prefect import flow, task
+from prefect import flow
 from prefect.logging import get_run_logger
 
-
-@task
-def fetch_cve_data(cve_id: str):
-    """Fetch CVE information from vulnerability databases"""
-    logger = get_run_logger()
-    logger.info(f"Fetching CVE data for {cve_id}")
-    # TODO: Implement OSV.dev integration
-    return {"cve_id": cve_id, "summary": "Placeholder"}
-
-
-@task
-def clone_repository(repo_url: str, branch: str = "main"):
-    """Clone GitHub repository"""
-    logger = get_run_logger()
-    logger.info(f"Cloning repository {repo_url} (branch: {branch})")
-    # TODO: Implement git clone
-    return "/tmp/repo_path"
-
-
-@task
-def build_code_index(repo_path: str):
-    """Build code index and AST"""
-    logger = get_run_logger()
-    logger.info(f"Building code index for {repo_path}")
-    # TODO: Implement Python AST analysis
-    return {"methods": {}, "dependencies": []}
-
-
-@task
-def run_ai_agent(cve_info: dict, code_index: dict):
-    """Run AI agent analysis"""
-    logger = get_run_logger()
-    logger.info("Running AI agent analysis")
-    # TODO: Implement LangChain agent
-    return {"findings": [], "status": "UNKNOWN"}
-
-
-@task
-def generate_report(job_id: str, analysis: dict):
-    """Generate vulnerability report"""
-    logger = get_run_logger()
-    logger.info(f"Generating report for job {job_id}")
-    # TODO: Implement report generation
-    return {"report_html": "", "report_json": {}}
-
-
-@task
-def cleanup_repository(repo_path: str):
-    """Cleanup temporary repository"""
-    logger = get_run_logger()
-    logger.info(f"Cleaning up {repo_path}")
-    # TODO: Implement cleanup
-    pass
+# Import tasks
+from tasks.vuln_db_tasks import fetch_cve_data
+from tasks.repo_tasks import clone_repository, cleanup_repository
+from tasks.indexer_tasks import build_code_index
+from tasks.agent_tasks import run_ai_agent
 
 
 @flow(name="CVE Analysis Flow")
@@ -78,10 +30,21 @@ def analyze_repository_for_cve(
     """
     logger = get_run_logger()
     logger.info(f"Starting CVE analysis for job {job_id}")
+    logger.info(f"Repository: {repo_url}, Branch: {branch}, CVE: {cve_id}")
+    
+    repo_path = None
     
     try:
         # 1. Fetch CVE data
         cve_info = fetch_cve_data(cve_id)
+        
+        if not cve_info.get("success"):
+            logger.error(f"Aborting analysis: {cve_info.get('error')}")
+            return {
+                "job_id": job_id,
+                "status": "ERROR",
+                "error": cve_info.get("error")
+            }
         
         # 2. Clone repository
         repo_path = clone_repository(repo_url, branch)
@@ -89,21 +52,36 @@ def analyze_repository_for_cve(
         # 3. Build code index
         code_index = build_code_index(repo_path)
         
-        # 4. Run AI agent analysis
-        analysis = run_ai_agent(cve_info, code_index)
+        # 4. Run AI agent analysis with ADK
+        analysis = run_ai_agent(
+            cve_info=cve_info,
+            code_index=code_index,
+            job_id=job_id,
+            repo_url=repo_url,
+            branch=branch
+        )
         
-        # 5. Generate report
-        report = generate_report(job_id, analysis)
-        
-        # 6. Cleanup
-        cleanup_repository(repo_path)
+        # 5. Generate report (report is already included in analysis from agent)
+        # The ADK agent returns a complete report, so we can use it directly
+        report = analysis
         
         logger.info(f"Completed CVE analysis for job {job_id}")
+        logger.info(f"Final status: {report.get('status', 'UNKNOWN')}")
+        
         return report
         
     except Exception as e:
-        logger.error(f"Error in CVE analysis: {str(e)}")
-        raise
+        logger.error(f"Error in CVE analysis workflow: {str(e)}")
+        # Return error report structure
+        return {
+            "job_id": job_id,
+            "status": "ERROR",
+            "error": str(e)
+        }
+    finally:
+        # 6. Cleanup (always run)
+        if repo_path:
+            cleanup_repository(repo_path)
 
 
 if __name__ == "__main__":
