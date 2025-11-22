@@ -1,0 +1,14 @@
+[project]
+name = "vuln-hunter-backend"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.11"
+dependencies = [
+    "django>=5.2.8",
+    "django-cors-headers>=4.9.0",
+    "djangorestframework>=3.16.1",
+    "dj-database-url>=2.3.0",
+    "prefect>=3.6.4",
+    "psycopg2-binary>=2.9.11",
+    "python-dotenv>=1.2.1",
+]

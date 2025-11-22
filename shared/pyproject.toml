@@ -1,0 +1,16 @@
+[project]
+name = "vuln-hunter-shared"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "Suresh Kumar", email = "sureshdsk91@gmail.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.12.4",
+    "pydantic-settings>=2.12.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.8.13,<0.9.0"]
+build-backend = "uv_build"

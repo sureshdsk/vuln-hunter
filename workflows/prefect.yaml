@@ -1,0 +1,14 @@
+"""
+Prefect project configuration
+"""
+
+name: vuln-hunter-workflows
+prefect-version: 3.6.4
+
+# Deployments
+deployments:
+  - name: cve-analysis
+    entrypoint: flows/cve_analysis_flow.py:analyze_repository_for_cve
+    work_pool:
+      name: default-pool
+    schedules: []

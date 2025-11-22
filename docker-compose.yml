@@ -1,0 +1,100 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: vuln-hunter-db
+    environment:
+      POSTGRES_DB: vuln_hunter
+      POSTGRES_USER: vuln_hunter
+      POSTGRES_PASSWORD: vulnhunter_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vuln_hunter"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: vuln-hunter-backend
+    command: uv run python manage.py runserver 0.0.0.0:8000
+    working_dir: /app/backend
+    volumes:
+      - ./backend:/app/backend
+      - ./shared:/app/shared
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://vuln_hunter:vulnhunter_dev@postgres:5432/vuln_hunter
+      - PREFECT_API_URL=http://prefect-server:4200/api
+      - DJANGO_SETTINGS_MODULE=vuln_hunter.settings
+      - DEBUG=True
+    depends_on:
+      postgres:
+        condition: service_healthy
+      prefect-server:
+        condition: service_started
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: vuln-hunter-frontend
+    command: npm run dev -- --host
+    working_dir: /app/frontend
+    volumes:
+      - ./frontend:/app/frontend
+      - /app/frontend/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+
+  prefect-server:
+    image: prefecthq/prefect:2-python3.11
+    container_name: vuln-hunter-prefect-server
+    command: prefect server start --host 0.0.0.0
+    ports:
+      - "4201:4200"
+    environment:
+      - PREFECT_API_DATABASE_CONNECTION_URL=postgresql+asyncpg://vuln_hunter:vulnhunter_dev@postgres:5432/vuln_hunter
+      - PREFECT_SERVER_API_HOST=0.0.0.0
+      - PREFECT_UI_API_URL=http://localhost:4201/api
+      - PREFECT_SERVER_ALLOW_EPHEMERAL_MODE=false
+      - PREFECT_SERVER_ANALYTICS_ENABLED=false
+    volumes:
+      - prefect_data:/root/.prefect
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  workflows:
+    build:
+      context: .
+      dockerfile: workflows/Dockerfile
+    container_name: vuln-hunter-workflows
+    command: uv run prefect worker start --pool default-pool
+    restart: unless-stopped
+    volumes:
+      - ./workflows:/app
+      - ./shared:/shared
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - PREFECT_API_URL=http://prefect-server:4200/api
+      - PREFECT_API_ENABLE_HTTP2=false
+      - DATABASE_URL=postgresql://vuln_hunter:vulnhunter_dev@postgres:5432/vuln_hunter
+    depends_on:
+      prefect-server:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  prefect_data:

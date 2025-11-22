@@ -1,0 +1,17 @@
+[project]
+name = "vuln-hunter-workflows"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.11"
+dependencies = [
+    "gitpython>=3.1.45",
+    "jinja2>=3.1.6",
+    "langchain>=1.0.8",
+    "langchain-google-genai>=3.1.0",
+    "prefect>=3.6.4",
+    "pydantic>=2.12.4",
+    "pyyaml>=6.0.3",
+    "requests>=2.32.5",
+    "toml>=0.10.2",
+    "tree-sitter>=0.25.2",
+]
