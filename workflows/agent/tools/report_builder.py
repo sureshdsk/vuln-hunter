@@ -324,12 +324,17 @@ def format_report_as_markdown(report: Dict[str, Any]) -> str:
         md += "## Findings\n\n"
         for i, finding in enumerate(report['findings'], 1):
             md += f"### Finding {i}\n\n"
-            md += f"- **File**: `{finding['file_path']}`\n"
-            md += f"- **Line**: {finding['line_number']}\n"
-            md += f"- **Method**: `{finding['method_name']}`\n"
+            # Handle both file_path and file formats
+            file_path = finding.get('file_path') or finding.get('file', 'Unknown')
+            line_num = finding.get('line_number') or finding.get('line', 0)
+            method = finding.get('method_name') or finding.get('type', 'Unknown')
+
+            md += f"- **File**: `{file_path}`\n"
+            md += f"- **Line**: {line_num}\n"
+            md += f"- **Method**: `{method}`\n"
             md += f"- **Exploitable**: {'⚠️ Yes' if finding.get('exploitable') else '✓ No'}\n"
             md += f"- **Confidence**: {finding.get('confidence', 0.0):.1%}\n"
-            md += f"- **Explanation**: {finding.get('explanation', 'N/A')}\n\n"
+            md += f"- **Explanation**: {finding.get('explanation') or finding.get('description', 'N/A')}\n\n"
             
             if finding.get('code_snippet'):
                 md += f"**Code Snippet**:\n```\n{finding['code_snippet']}\n```\n\n"
