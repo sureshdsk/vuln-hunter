@@ -90,14 +90,24 @@ WSGI_APPLICATION = 'vuln_hunter.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# Use DATABASE_URL for configuration (supports AlloyDB and other cloud databases)
-DATABASES = {
-    'default': dj_database_url.config(
-        default='postgresql://vuln_hunter:vulnhunter_dev@localhost:5432/vuln_hunter',
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
-}
+# Use PostgreSQL if DATABASE_URL is set (Docker), otherwise SQLite
+if os.getenv('DATABASE_URL'):
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.getenv('DATABASE_URL'),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+else:
+    # Use SQLite for local development (no PostgreSQL needed)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
 
 
 
@@ -158,7 +168,7 @@ REST_FRAMEWORK = {
 # CORS settings
 CORS_ALLOWED_ORIGINS = os.getenv(
     'CORS_ALLOWED_ORIGINS',
-    'http://localhost:3000'
+    'http://localhost:3000,http://localhost:5173'
 ).split(',')
 
 CORS_ALLOW_CREDENTIALS = True
